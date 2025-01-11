@@ -5,49 +5,57 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-
-public class MenuManager : MonoBehaviour
+namespace Jamzio.Runtime.UI
 {
-    [Serializable] private struct SceneLoadButton
-    {
-        public string SceneName;
-        public Button Button;
-        public float TransitionTime;
-    }
 
-    [SerializeField] private List<SceneLoadButton> _sceneLoadButtons;
-    [SerializeField] private Button _closeButton;
-
-    private void Awake()
+    public class MenuManager : MonoBehaviour
     {
-        foreach (var sceneLoadButton in _sceneLoadButtons)
-            sceneLoadButton.Button.onClick.AddListener(async () =>
+        [Serializable]
+        private struct SceneLoadButton
+        {
+            public string SceneName;
+            public Button Button;
+            public float TransitionTime;
+        }
+
+        [SerializeField] private List<SceneLoadButton> _sceneLoadButtons;
+        [SerializeField] private Button _closeButton;
+
+        private void Awake()
+        {
+            foreach (var sceneLoadButton in _sceneLoadButtons)
+                sceneLoadButton.Button.onClick.AddListener(async () =>
+                {
+                    SetButtonsActive(false);
+                    await Timer(sceneLoadButton.TransitionTime, () => LoadScene(sceneLoadButton.SceneName));
+                    SetButtonsActive(true);
+                });
+
+            if (_closeButton) _closeButton.onClick.AddListener(() =>
             {
                 SetButtonsActive(false);
-                await Timer(sceneLoadButton.TransitionTime, () => LoadScene(sceneLoadButton.SceneName));
-                SetButtonsActive(true);
+                #if UNITY_EDITOR
+                    UnityEditor.EditorApplication.isPlaying = false;
+                #else
+                    Application.Quit();
+                #endif
             });
+        }
 
-        if (_closeButton) _closeButton.onClick.AddListener(() =>
+        public void SetButtonsActive(bool areActive)
         {
-            SetButtonsActive(false);
-            Application.Quit();
-        });
-    }
+            foreach (SceneLoadButton sceneLoadButton in _sceneLoadButtons) sceneLoadButton.Button.interactable = areActive;
+        }
 
-    public void SetButtonsActive(bool areActive)
-    {
-        foreach (SceneLoadButton sceneLoadButton in _sceneLoadButtons) sceneLoadButton.Button.interactable = areActive;
-    }
+        private async UniTask Timer(float transitionTime, Action action)
+        {
+            await UniTask.WaitForSeconds(transitionTime);
+            action.Invoke();
+        }
 
-    private async UniTask Timer(float transitionTime, Action action)
-    {
-        await UniTask.WaitForSeconds(transitionTime);
-        action.Invoke();
-    }
-
-    private void LoadScene(string sceneName)
-    {
-        SceneManager.LoadScene(sceneName);
+        private void LoadScene(string sceneName)
+        {
+            SceneManager.LoadScene(sceneName);
+        }
     }
 }

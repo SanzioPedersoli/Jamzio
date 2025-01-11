@@ -1,84 +1,87 @@
 ﻿using UnityEditor;
 using UnityEngine;
 
-public class AlignmentTool : EditorWindow
+namespace Jamzio.Editor.Tools
 {
-    [MenuItem("Tools/Alignment Tool")]
-    public static void ShowWindow()
+    public class AlignmentTool : EditorWindow
     {
-        GetWindow<AlignmentTool>("Alignment Tool");
-    }
-
-    private void OnGUI()
-    {
-        GUILayout.Label("Alignment Options", EditorStyles.boldLabel);
-
-        if (GUILayout.Button("Align Vertically"))
+        [MenuItem("Tools/Alignment Tool")]
+        public static void ShowWindow()
         {
-            AlignObjects(Axis.Vertical);
+            GetWindow<AlignmentTool>("Alignment Tool");
         }
 
-        if (GUILayout.Button("Align Horizontally"))
+        private void OnGUI()
         {
-            AlignObjects(Axis.Horizontal);
+            GUILayout.Label("Alignment Options", EditorStyles.boldLabel);
+
+            if (GUILayout.Button("Align Vertically"))
+            {
+                AlignObjects(Axis.Vertical);
+            }
+
+            if (GUILayout.Button("Align Horizontally"))
+            {
+                AlignObjects(Axis.Horizontal);
+            }
+
+            if (GUILayout.Button("Distribute Regularly"))
+            {
+                DistributeObjects();
+            }
         }
 
-        if (GUILayout.Button("Distribute Regularly"))
+        private enum Axis
         {
-            DistributeObjects();
-        }
-    }
-
-    private enum Axis
-    {
-        Vertical,
-        Horizontal
-    }
-
-    private static void AlignObjects(Axis axis)
-    {
-        var selectedObjects = Selection.transforms;
-
-        if (selectedObjects.Length < 2)
-        {
-            Debug.LogWarning("Select at least two objects to align.");
-            return;
+            Vertical,
+            Horizontal
         }
 
-        float center = 0f;
-        foreach (var obj in selectedObjects)
+        private static void AlignObjects(Axis axis)
         {
-            center += axis == Axis.Vertical ? obj.position.y : obj.position.x;
+            var selectedObjects = Selection.transforms;
+
+            if (selectedObjects.Length < 2)
+            {
+                Debug.LogWarning("Select at least two objects to align.");
+                return;
+            }
+
+            float center = 0f;
+            foreach (var obj in selectedObjects)
+            {
+                center += axis == Axis.Vertical ? obj.position.y : obj.position.x;
+            }
+            center /= selectedObjects.Length;
+
+            foreach (var obj in selectedObjects)
+            {
+                Undo.RecordObject(obj, "Align Objects");
+                obj.position = axis == Axis.Vertical
+                    ? new Vector3(obj.position.x, center, obj.position.z)
+                    : new Vector3(center, obj.position.y, obj.position.z);
+            }
         }
-        center /= selectedObjects.Length;
 
-        foreach (var obj in selectedObjects)
+        private static void DistributeObjects()
         {
-            Undo.RecordObject(obj, "Align Objects");
-            obj.position = axis == Axis.Vertical
-                ? new Vector3(obj.position.x, center, obj.position.z)
-                : new Vector3(center, obj.position.y, obj.position.z);
-        }
-    }
+            var selectedObjects = Selection.transforms;
 
-    private static void DistributeObjects()
-    {
-        var selectedObjects = Selection.transforms;
+            if (selectedObjects.Length < 3)
+            {
+                Debug.LogWarning("Select at least three objects to distribute.");
+                return;
+            }
 
-        if (selectedObjects.Length < 3)
-        {
-            Debug.LogWarning("Select at least three objects to distribute.");
-            return;
-        }
+            var startPosition = selectedObjects[0].transform.position;
+            var targetPosition = selectedObjects[^1].transform.position;
+            var floatlenght = selectedObjects.Length - 1f;
 
-        var startPosition = selectedObjects[0].transform.position;
-        var targetPosition = selectedObjects[^1].transform.position;
-        var floatlenght = selectedObjects.Length - 1f;
-
-        for (int i = 1; i < selectedObjects.Length - 1; i++)
-        {
-            Undo.RecordObject(selectedObjects[i], "Distribute Objects");
-            selectedObjects[i].position = Vector3.Lerp(startPosition, targetPosition, i / floatlenght);
+            for (int i = 1; i < selectedObjects.Length - 1; i++)
+            {
+                Undo.RecordObject(selectedObjects[i], "Distribute Objects");
+                selectedObjects[i].position = Vector3.Lerp(startPosition, targetPosition, i / floatlenght);
+            }
         }
     }
 }

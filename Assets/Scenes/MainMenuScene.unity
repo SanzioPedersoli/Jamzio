@@ -876,6 +876,7 @@ GameObject:
   m_Component:
   - component: {fileID: 590157909}
   - component: {fileID: 590157908}
+  - component: {fileID: 590157910}
   m_Layer: 0
   m_Name: MainMenuManager
   m_TagString: Untagged
@@ -924,6 +925,24 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &590157910
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 590157907}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3061979fb2061aa41b1730f4c4d3adde, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _audioMixer: {fileID: 24100000, guid: 3532dca5371285847b0b2fe5fd6884dc, type: 2}
+  _mixerParamenterNames:
+  - MasterVolume
+  - SoundtrackVolume
+  - SFXVolume
+  - VoiceVolume
 --- !u!1 &782579098
 GameObject:
   m_ObjectHideFlags: 0
